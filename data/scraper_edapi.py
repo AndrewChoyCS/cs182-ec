@@ -33,8 +33,10 @@ def scrape_with_edapi():
     # but typically these wrappers map to the API parameters.
     # Let's assume basic list_threads(course_id, limit, offset) usage based on standard API patterns.
     
+    # BATCH_SIZE controls how many items we fetch per request. 
+    # It does NOT limit the total number of items inspected.
     offset = 0
-    limit = 100
+    BATCH_SIZE = 100 
     has_more = True
     
     while has_more:
@@ -42,7 +44,7 @@ def scrape_with_edapi():
             # Note: The exact signature of 'list_threads' might vary. 
             # If this fails, we might need to inspect the library code or source.
             # Based on standard practices:
-            threads = ed.list_threads(COURSE_ID, limit=limit, offset=offset, sort='new')
+            threads = ed.list_threads(COURSE_ID, limit=BATCH_SIZE, offset=offset, sort='new')
             
             if not threads:
                 print("🏁 No more threads found.")
@@ -80,10 +82,11 @@ def scrape_with_edapi():
                     except Exception as e:
                         print(f"⚠️ Error processing thread {t.get('id')}: {e}")
 
-            if len(threads) < limit:
+            if len(threads) < BATCH_SIZE:
                 has_more = False
+                print("🏁 Reached end of threads list (batch smaller than limit).")
             else:
-                offset += limit
+                offset += BATCH_SIZE
             
             time.sleep(0.5) # Rate limit politeness
 
